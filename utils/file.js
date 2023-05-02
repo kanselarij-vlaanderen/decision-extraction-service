@@ -22,7 +22,7 @@ PREFIX dbpedia: <http://dbpedia.org/ontology/>
 PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#>
 
-SELECT (?uuid as ?id) ?name ?format ?size ?extension ?created ?modified
+SELECT (?uuid as ?id) ?name ?format ?size ?extension ?created ?modified ?dataSource
 WHERE
 {
     ?uri a nfo:FileDataObject ;
@@ -33,6 +33,7 @@ WHERE
     OPTIONAL { ?uri dbpedia:fileExtension ?extension }
     OPTIONAL { ?uri dct:created ?created }
     OPTIONAL { ?uri dct:modified ?modified }
+    OPTIONAL { ?dataSource nie:dataSource ?uri }
 }
 LIMIT 1
   `;
