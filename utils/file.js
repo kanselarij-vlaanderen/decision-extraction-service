@@ -42,7 +42,7 @@ LIMIT 1
   try {
     results = await query(q); // NO SUDO
   } catch (error) {
-    console.log('this is the error":' + error);
+    console.error('this is the error":' + error);
     return null;
   }
 
