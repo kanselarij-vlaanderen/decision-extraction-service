@@ -2,10 +2,7 @@ import {
   app,
   errorHandler,
   query,
-  update,
   sparqlEscapeString,
-  sparqlEscapeUri,
-  uuid as generateUuid,
 } from "mu";
 import { getFileById } from "./utils/file.js";
 import pdf from "pdf-parse";
@@ -20,11 +17,23 @@ async function getNotaFile(notaId) {
     PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
     PREFIX dossier: <https://data.vlaanderen.be/ns/dossier#>
     PREFIX prov: <http://www.w3.org/ns/prov#>
+    PREFIX dct: <http://purl.org/dc/terms/>
+    PREFIX nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#>
 
     SELECT DISTINCT ?vid WHERE {
       ?s a dossier:Stuk .
       ?s mu:uuid ${sparqlEscapeString(notaId)} .
-      ?s prov:value/mu:uuid ?vid .
+      {
+          ?s prov:value ?file .
+      }
+      UNION
+      {
+          ?s prov:value/^prov:hadPrimarySource ?file .
+      }
+      ?file a nfo:FileDataObject ;
+          mu:uuid ?vid ;
+          dct:format ?format .
+      FILTER(CONTAINS(?format, "application/pdf"))
     }`;
 
   const res = await query(queryString);
