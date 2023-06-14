@@ -22,7 +22,7 @@ PREFIX dbpedia: <http://dbpedia.org/ontology/>
 PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#>
 
-SELECT (?uuid as ?id) ?name ?format ?size ?extension ?created ?modified ?dataSource
+SELECT ?name ?format ?size ?extension ?created ?modified ?dataSource
 WHERE
 {
     ?uri a nfo:FileDataObject ;
@@ -41,16 +41,17 @@ LIMIT 1
   let results;
   try {
     results = await query(q); // NO SUDO
+    const parsedResults = parseSparqlResults(results);
+    debugger;
+    if (parsedResults.length > 0) {
+      return parsedResults[0];
+    } else {
+      console.log('File found but without any results');
+      throw new Error();
+    }
   } catch (error) {
-    console.error('this is the error":' + error);
-    return null;
-  }
-
-  const parsedResults = parseSparqlResults(results);
-  if (parsedResults.length > 0) {
-    return parsedResults[0];
-  } else {
-    return null;
+    console.log('File not found', error);
+    throw new Error(`File with id:${fileId} not found`);
   }
 };
 

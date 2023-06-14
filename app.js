@@ -9,7 +9,7 @@ import pdf from "pdf-parse";
 import * as fs from "fs";
 
 function toLocalPath(dataSourceUri) {
-  return "/share/" + dataSourceUri.slice("share://".length);
+  return dataSourceUri.replace('share://', '/share/');
 }
 
 async function getNotaFile(notaId) {
@@ -20,7 +20,7 @@ async function getNotaFile(notaId) {
     PREFIX dct: <http://purl.org/dc/terms/>
     PREFIX nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#>
 
-    SELECT DISTINCT ?vid WHERE {
+    SELECT DISTINCT ?uuid WHERE {
       ?s a dossier:Stuk .
       ?s mu:uuid ${sparqlEscapeString(notaId)} .
       {
@@ -31,13 +31,16 @@ async function getNotaFile(notaId) {
           ?s prov:value/^prov:hadPrimarySource ?file .
       }
       ?file a nfo:FileDataObject ;
-          mu:uuid ?vid ;
+          mu:uuid ?uuid ;
           dct:format ?format .
       FILTER(CONTAINS(?format, "application/pdf"))
     }`;
 
   const res = await query(queryString);
-  return res.results.bindings[0].vid.value;
+  if (res.results.bindings.length) {
+    return res.results.bindings[0].uuid.value;
+  }
+  throw new Error(`File for Nota with id ${notaId} not found`);
 }
 
 function clean(text) {
@@ -49,20 +52,29 @@ function clean(text) {
 }
 
 app.get("/:notaId", async function (req, res) {
-  const fileId = await getNotaFile(req.params.notaId);
-  const results = await getFileById(fileId);
+  try {
+    const fileId = await getNotaFile(req.params.notaId);
+    const results = await getFileById(fileId);
 
-  let dataBuffer = fs.readFileSync(toLocalPath(results.dataSource));
+    let dataBuffer = fs.readFileSync(toLocalPath(results.dataSource));
 
-  const { text } = await pdf(dataBuffer);
-  const decisionStartToken = "VOORSTEL VAN BESLISSING";
-  const decisionStartIndex = text.indexOf(decisionStartToken);
-  const rawDecisionText = text.slice(
-    decisionStartIndex + decisionStartToken.length
-  );
-  const cleanedDecisionText = clean(rawDecisionText);
+    const { text } = await pdf(dataBuffer);
+    const decisionStartToken = "VOORSTEL VAN BESLISSING";
+    const decisionStartIndex = text.indexOf(decisionStartToken);
+    let rawDecisionText = text;
+    // in case we don't find the start token we return all content
+    if (decisionStartIndex !== -1) {
+      rawDecisionText = text.slice(
+        decisionStartIndex + decisionStartToken.length
+      );
+    }
+    const cleanedDecisionText = clean(rawDecisionText);
 
-  res.send({ content: cleanedDecisionText });
+    res.send({ content: cleanedDecisionText });
+  } catch(e){
+    res.status(500);
+    res.send();
+  }
 });
 
 app.use(errorHandler);
