@@ -72,6 +72,7 @@ app.get("/:notaId", async function (req, res) {
 
     res.send({ content: cleanedDecisionText });
   } catch(e){
+    console.log("error", e)
     res.status(500);
     res.send();
   }
