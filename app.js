@@ -48,7 +48,7 @@ function clean(text) {
   try {
     const trimmed = text.trim();
     const noDoubleSpaces = trimmed.replace(/  +/g, " ");
-    const htmlLineBreaks = noDoubleSpaces.replace("/\n/g", "<br />");
+    const htmlLineBreaks = noDoubleSpaces.replace(/\n/g, "<br />");
     return htmlLineBreaks;
   } catch (e) {
     console.log('something went wrong when cleaning the text:', e);
