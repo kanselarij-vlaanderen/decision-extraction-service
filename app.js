@@ -44,7 +44,6 @@ async function getNotaFile(notaId) {
 }
 
 function clean(text) {
-  console.debug('text', text)
   try {
     const trimmed = text.trim();
     const noDoubleSpaces = trimmed.replace(/  +/g, " ");
@@ -52,6 +51,7 @@ function clean(text) {
     return htmlLineBreaks;
   } catch (e) {
     console.log('something went wrong when cleaning the text:', e);
+    console.debug('text that could not be cleaned', text);
     return null;
   }
 }
