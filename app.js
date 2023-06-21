@@ -44,11 +44,16 @@ async function getNotaFile(notaId) {
 }
 
 function clean(text) {
-  const trimmed = text.trim();
-  const noDoubleSpaces = trimmed.replaceAll("  ", " ");
-  const htmlLineBreaks = noDoubleSpaces.replaceAll("\n", "<br />")
-
-  return htmlLineBreaks;
+  console.debug('text', text)
+  try {
+    const trimmed = text.trim();
+    const noDoubleSpaces = trimmed.replaceAll("  ", " ");
+    const htmlLineBreaks = noDoubleSpaces.replaceAll("\n", "<br />");
+    return htmlLineBreaks;
+  } catch (e) {
+    console.log('something went wrong when cleaning the text:', e);
+    return null;
+  }
 }
 
 app.get("/:notaId", async function (req, res) {
@@ -68,9 +73,10 @@ app.get("/:notaId", async function (req, res) {
         decisionStartIndex + decisionStartToken.length
       );
     }
-    const cleanedDecisionText = clean(rawDecisionText);
+    let cleanedDecisionText = clean(rawDecisionText);
+    const finalDecisionText = cleanedDecisionText || rawDecisionText
 
-    res.send({ content: cleanedDecisionText });
+    res.send({ content: finalDecisionText});
   } catch(e){
     console.log("error", e)
     res.status(500);
