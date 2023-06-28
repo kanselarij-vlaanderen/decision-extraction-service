@@ -42,7 +42,6 @@ LIMIT 1
   try {
     results = await query(q); // NO SUDO
     const parsedResults = parseSparqlResults(results);
-    debugger;
     if (parsedResults.length > 0) {
       return parsedResults[0];
     } else {
