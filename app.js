@@ -74,8 +74,15 @@ app.get("/:notaId", async function (req, res) {
       );
     }
     let cleanedDecisionText = clean(rawDecisionText);
-    const finalDecisionText = cleanedDecisionText || rawDecisionText
+    let finalDecisionText = cleanedDecisionText || rawDecisionText
 
+    const textToRemove = "De Vlaamse minister van";
+    const signaturePattern = textToRemove.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexPattern = new RegExp(
+      `(?:${signaturePattern})+|\/+|Pagina\\s[0-9]\\svan\\s[0-9]`, 'g');
+
+    finalDecisionText = finalDecisionText.replace(regexPattern, '');
+    
     res.send({ content: finalDecisionText});
   } catch(e){
     console.log("error", e)
