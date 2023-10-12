@@ -45,10 +45,21 @@ async function getNotaFile(notaId) {
 
 function clean(text) {
   try {
-    const trimmed = text.trim();
+    const pagenumbersRemoved = text.replace(/Pagina\s+[0-9]\s+van\s+[0-9]/g, '');
+    const forwardSlashesRemoved = pagenumbersRemoved.replace(/\/\/+/g, '\n');
+    const signatureIndex = forwardSlashesRemoved.search(/(De minister-president van de Vlaamse Regering)|(De viceminister-president van de Vlaamse Regering)|(De Vlaamse minister van)/);
+    let signaturesRemoved = forwardSlashesRemoved;
+    if (signatureIndex > -1) {
+      signaturesRemoved = signaturesRemoved.slice(0, signatureIndex);
+    }
+    const trimmed = signaturesRemoved.trim();
     const noDoubleSpaces = trimmed.replace(/  +/g, " ");
-    const htmlLineBreaks = noDoubleSpaces.replace(/\n/g, "<br />");
-    return htmlLineBreaks;
+    const paragraphs = noDoubleSpaces.split(/\n\s*\n/g);
+    const paragraphsAdded = '<p>' + paragraphs.map(paragraph => paragraph.trim().replace(/\n/g, " ")).join('</p>\n<p>') + '</p>';
+    const noDoubleNewlines = paragraphsAdded.replace(/<br>\s*(<br>\s*)+/g, "<br>");
+    const itemSpacingAdded = noDoubleNewlines.replace(/<p>([0-9]+)\./g, "<p>&nbsp;&nbsp; $1.");
+    const subItemSpacingAdded = itemSpacingAdded.replace(/<p>&nbsp;&nbsp;\s*([0-9]+)\.([0-9]+)/g, "<p>&nbsp;&nbsp;&nbsp;&nbsp; $1.$2");
+    return subItemSpacingAdded;
   } catch (e) {
     console.log('something went wrong when cleaning the text:', e);
     console.debug('text that could not be cleaned', text);
@@ -74,7 +85,7 @@ app.get("/:notaId", async function (req, res) {
       );
     }
     let cleanedDecisionText = clean(rawDecisionText);
-    const finalDecisionText = cleanedDecisionText || rawDecisionText
+    let finalDecisionText = cleanedDecisionText || rawDecisionText
 
     res.send({ content: finalDecisionText});
   } catch(e){
