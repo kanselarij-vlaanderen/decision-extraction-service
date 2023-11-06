@@ -45,7 +45,7 @@ async function getNotaFile(notaId) {
 
 function clean(text) {
   try {
-    const pagenumbersRemoved = text.replace(/Pagina\s+[0-9]\s+van\s+[0-9]/g, '');
+    const pagenumbersRemoved = text.replace(/Pagina\s+[0-9]+\s+van\s+[0-9]+/g, '');
     const forwardSlashesRemoved = pagenumbersRemoved.replace(/\/\/+/g, '\n');
     const signatureIndex = forwardSlashesRemoved.search(/(De minister-president van de Vlaamse Regering)|(De viceminister-president van de Vlaamse Regering)|(De Vlaamse minister van)/);
     let signaturesRemoved = forwardSlashesRemoved;
