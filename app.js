@@ -56,7 +56,8 @@ function clean(text) {
     const noDoubleSpaces = trimmed.replace(/  +/g, " ");
     const paragraphs = noDoubleSpaces.split(/\n\s*\n/g);
     const paragraphsAdded = '<p>' + paragraphs.map(paragraph => paragraph.trim().replace(/\n/g, " ")).join('</p>\n<p>') + '</p>';
-    const noDoubleNewlines = paragraphsAdded.replace(/<br>\s*(<br>\s*)+/g, "<br>");
+    const noDoubleSpacesAfterParagraphs = paragraphsAdded.replace(/  +/g, " ");
+    const noDoubleNewlines = noDoubleSpacesAfterParagraphs.replace(/<br>\s*(<br>\s*)+/g, "<br>");
     const itemSpacingAdded = noDoubleNewlines.replace(/<p>([0-9]+)\./g, "<p>&nbsp;&nbsp; $1.");
     const subItemSpacingAdded = itemSpacingAdded.replace(/<p>&nbsp;&nbsp;\s*([0-9]+)\.([0-9]+)/g, "<p>&nbsp;&nbsp;&nbsp;&nbsp; $1.$2");
     return subItemSpacingAdded;
