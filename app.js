@@ -53,14 +53,13 @@ function clean(text) {
       signaturesRemoved = signaturesRemoved.slice(0, signatureIndex);
     }
     const trimmed = signaturesRemoved.trim();
-    const noDoubleSpaces = trimmed.replace(/  +/g, " ");
-    const paragraphs = noDoubleSpaces.split(/\n\s*\n/g);
-    const paragraphsAdded = '<p>' + paragraphs.map(paragraph => paragraph.trim().replace(/\n/g, " ")).join('</p>\n<p>') + '</p>';
-    const noDoubleSpacesAfterParagraphs = paragraphsAdded.replace(/  +/g, " ");
-    const noDoubleNewlines = noDoubleSpacesAfterParagraphs.replace(/<br>\s*(<br>\s*)+/g, "<br>");
+    const paragraphs = trimmed.split(/\n\s*\n/g);
+    const paragraphsAdded = '<p>' + paragraphs.map(paragraph => paragraph.trim().replace(/([;\.])+\s*\n/g, "$1<br>").replace(/\n/g, " ")).join('</p>\n<p>') + '</p>';
+    const noDoubleNewlines = paragraphsAdded.replace(/<br>\s*(<br>\s*)+/g, "<br>");
     const itemSpacingAdded = noDoubleNewlines.replace(/<p>([0-9]+)\./g, "<p>&nbsp;&nbsp; $1.");
     const subItemSpacingAdded = itemSpacingAdded.replace(/<p>&nbsp;&nbsp;\s*([0-9]+)\.([0-9]+)/g, "<p>&nbsp;&nbsp;&nbsp;&nbsp; $1.$2");
-    return subItemSpacingAdded;
+    const noDoubleSpaces = subItemSpacingAdded.replace(/\s+/g, " ");
+    return noDoubleSpaces;
   } catch (e) {
     console.log('something went wrong when cleaning the text:', e);
     console.debug('text that could not be cleaned', text);
